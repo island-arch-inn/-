@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AR 路線 2｜南環線（實境導覽＋民間小故事）</title>
+
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
+
+  <style>
+    body { margin:0; overflow:hidden; font-family:"Noto Sans TC", sans-serif; }
+    .hint{
+      position: fixed; left:0; right:0; bottom:14px; z-index: 9;
+      text-align:center; color:#fff; font-size:14px;
+      text-shadow: 0 2px 8px rgba(0,0,0,.8);
+      padding: 0 12px;
+    }
+    .topbar{
+      position: fixed; left:12px; top:12px; z-index: 9;
+      display:flex; gap:10px; align-items:center;
+    }
+    .btn{
+      background: rgba(0,0,0,.55);
+      color:#fff; border:1px solid rgba(255,255,255,.25);
+      padding:8px 12px; border-radius: 999px; text-decoration:none;
+      font-size: 13px;
+      backdrop-filter: blur(8px);
+    }
+    .menu{
+      position: fixed; left:50%; transform: translateX(-50%);
+      bottom:60px; z-index: 10;
+      display:none; gap:10px;
+      padding:10px 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.55);
+      border: 1px solid rgba(255,255,255,.2);
+      backdrop-filter: blur(10px);
+    }
+    .menu button{
+      border:none; border-radius: 999px;
+      padding:10px 14px;
+      font-size: 14px; font-weight: 700;
+      color:#fff; cursor:pointer;
+      background: rgba(56,189,248,.35);
+      border: 1px solid rgba(56,189,248,.55);
+    }
+    .menu button.secondary{
+      background: rgba(34,197,94,.28);
+      border: 1px solid rgba(34,197,94,.55);
+    }
+  </style>
+</head>
+<script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+
+<body>
+  <div class="topbar">
+    <a class="btn" href="ar.html">← 回 AR 選單</a>
+    <a class="btn" href="#" onclick="pauseAll(); return false;">暫停</a>
+  </div>
+
+  <div class="hint">
+    路線二（南環線）｜對準 Hiro 卡後，選擇「實境導覽」或「民間小故事」。
+  </div>
+
+  <div class="menu" id="menu">
+    <button onclick="playScenery()">📍 實境導覽</button>
+    <button class="secondary" onclick="playStory()">📖 民間小故事</button>
+  </div>
+
+  <a-scene
+    embedded
+    vr-mode-ui="enabled:false"
+    renderer="antialias:true; alpha:true"
+    arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled:false;"
+  >
+    <a-assets>
+      <video id="v_scenery" src="ar/route2_scenery.mp4" loop playsinline webkit-playsinline></video>
+      <video id="v_story"   src="ar/route2_story.mp4"   loop playsinline webkit-playsinline></video>
+    </a-assets>
+
+    <a-marker preset="hiro" id="marker">
+      <a-video id="plane_scenery"
+        src="#v_scenery"
+        width="1.8" height="1.01"
+        position="0 0.7 0.35" rotation="0 0 0" look-at="[camera]"
+        animation="property: position; dir: alternate; dur: 1200; easing: easeInOutSine; loop: true; to: 0 0.65 0.25"
+        visible="true"
+      ></a-video>
+
+      <a-video id="plane_story"
+        src="#v_story"
+        width="1.2" height="0.675"
+        position="0 0.6 0.25" rotation="0 0 0" look-at="[camera]"
+        animation="property: position; dir: alternate; dur: 1200; easing: easeInOutSine; loop: true; to: 0 0.65 0.25"
+        visible="false"
+      ></a-video>
+
+      <a-plane
+        width="1.35" height="0.85"
+        position="0 0.01 0"
+        rotation="-90 0 0"
+        material="color:#000; opacity:0.25"
+      ></a-plane>
+    </a-marker>
+
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <script>
+    const menu = document.getElementById('menu');
+    const marker = document.getElementById('marker');
+
+    const vScenery = document.getElementById('v_scenery');
+    const vStory   = document.getElementById('v_story');
+
+    const planeScenery = document.getElementById('plane_scenery');
+    const planeStory   = document.getElementById('plane_story');
+
+    function pauseAll(){ vScenery.pause(); vStory.pause(); }
+
+    function showScenery(){
+      planeScenery.setAttribute('visible', 'true');
+      planeStory.setAttribute('visible', 'false');
+    }
+    function showStory(){
+      planeScenery.setAttribute('visible', 'false');
+      planeStory.setAttribute('visible', 'true');
+    }
+
+    async function playScenery(){
+      showScenery();
+      vStory.pause();
+      try { await vScenery.play(); } catch(e){}
+    }
+    async function playStory(){
+      showStory();
+      vScenery.pause();
+      try { await vStory.play(); } catch(e){}
+    }
+
+    marker.addEventListener('markerFound', () => {
+      menu.style.display = 'flex';
+      playScenery();
+    });
+
+    marker.addEventListener('markerLost', () => {
+      menu.style.display = 'none';
+      pauseAll();
+    });
+
+    window.addEventListener('click', () => {
+      if (menu.style.display === 'flex') {
+        if (planeScenery.getAttribute('visible') === true) playScenery();
+        if (planeStory.getAttribute('visible') === true) playStory();
+      }
+    });
+  </script>
+</body>
+</html>
