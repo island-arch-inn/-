@@ -75,7 +75,15 @@
     arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled:false;"
   >
     <a-assets>
-      <video id="v_scenery" src="ar/route1_scenery.mp4" loop playsinline webkit-playsinline></video>
+      <video
+  id="v_scenery"
+  src="video/route1.mp4"
+  autoplay
+  loop
+  muted
+  playsinline
+  webkit-playsinline
+></video>
       <video id="v_story"   src="ar/route1_story.mp4"   loop playsinline webkit-playsinline></video>
     </a-assets>
 
@@ -158,3 +166,4 @@
   </script>
 </body>
 </html>
+
